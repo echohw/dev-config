@@ -1,0 +1,7 @@
+# \u9650\u901F\u5668
+access:
+  limits:
+    all:
+      path: /abc
+      timeUnit: 60
+      limitInUnit: 10
