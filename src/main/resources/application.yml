@@ -1,4 +1,27 @@
-# \u9650\u901F\u5668
+spring:
+  rabbitmq:
+    host: rabbitmq.server.com
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    timeout: 1000
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+  data:
+    mongodb:
+      uri: mongodb://127.0.0.1:27017
+      database: test
+
+# 限速器
 access:
   limits:
     all:

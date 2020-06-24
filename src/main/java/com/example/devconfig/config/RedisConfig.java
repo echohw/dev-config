@@ -38,6 +38,7 @@ public class RedisConfig {
     }
 
     @Bean
+    @SuppressWarnings("unchecked")
     public RedisSerializer objectToJsonRedisSerializer() {
         Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
         ObjectMapper objectMapper = new ObjectMapper();

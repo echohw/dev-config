@@ -21,8 +21,9 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 @Configuration
 public class CacheConfig {
 
-    @Primary
     @Bean
+    @Primary
+    @SuppressWarnings("unchecked")
     public CacheManager cacheManager(RedisConnectionFactory factory, @Qualifier("objectToJsonRedisSerializer") RedisSerializer objectToJsonRedisSerializer) {
         RedisCacheWriter redisCacheWriter = RedisCacheWriter.nonLockingRedisCacheWriter(factory);
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()

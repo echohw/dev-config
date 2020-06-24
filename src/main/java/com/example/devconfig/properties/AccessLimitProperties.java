@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 /**
  * Created by AMe on 2020-06-22 13:08.
  */
+@Data
 @Component
 @ConfigurationProperties(prefix = "access")
-@Data
 public class AccessLimitProperties {
 
     private Map<String, Properties> limits = new LinkedHashMap<>();
