@@ -38,10 +38,10 @@ public class AccessInterceptor implements HandlerInterceptor {
     private String scriptText;
 
     {
-        String luaFile = "scripts/access_limit.lua";
-        logger.info("加载Lua文件: {}", luaFile);
+        String luaScriptFile = "scripts/access_limit.lua";
+        logger.info("加载Lua文件: {}", luaScriptFile);
        try (
-           InputStream inputStream = new ClassPathResource(luaFile).getInputStream()
+           InputStream inputStream = new ClassPathResource(luaScriptFile).getInputStream()
        ) {
            scriptText = StreamUtils.readAsString(inputStream, Charsets.UTF_8);
        } catch (IOException ex) {
@@ -49,18 +49,19 @@ public class AccessInterceptor implements HandlerInterceptor {
        }
     }
 
-    private String getClientId(HttpServletRequest request) {
-        return RequestUtils.getIp(request);
+    private String getClientId(HttpServletRequest request, String key) {
+        String ipAddr = RequestUtils.getIp(request);
+        return ipAddr + ":" + key;
     }
 
     private String getReqUri(HttpServletRequest request) {
         return RequestUtils.getUri(request);
     }
 
-    private <V> Integer getAccessInUnit(String clientId, Integer timeUnit) {
+    private Long getAccessInUnit(String clientId, Integer timeUnit) {
         List<String> keys = Collections.singletonList(clientId);
         Object[] args = {timeUnit};
-        return redisUtils.execScript(scriptText, keys, args, Integer.class);
+        return redisUtils.execScript(scriptText, keys, args, Long.class);
     }
 
     private boolean matchPath(HttpServletRequest request, String path) {
@@ -68,28 +69,27 @@ public class AccessInterceptor implements HandlerInterceptor {
         return reqUri.equals(path); // TODO 如果路径与path相匹配
     }
 
-    private Integer getLimitInUnit(HttpServletRequest request, Integer limitInUnit) {
+    private Long getLimitInUnit(HttpServletRequest request, Long limitInUnit) {
         return limitInUnit;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String clientId = getClientId(request);
         boolean access = true;
         for (Entry<String, Properties> entry : accessLimitProperties.getLimits().entrySet()) {
             String key = entry.getKey();
             Properties props = entry.getValue();
             if (matchPath(request, props.getPath())) {
-                clientId = clientId + ":" + key ;
+                String clientId = getClientId(request, key);
                 Integer timeUnit = props.getTimeUnit();
-                Integer countInUnit = getAccessInUnit(clientId, timeUnit);
-                Integer limitInUnit = getLimitInUnit(request, props.getLimitInUnit());
+                Long countInUnit = getAccessInUnit(clientId, timeUnit);
+                Long limitInUnit = getLimitInUnit(request, props.getLimitInUnit());
                 if (countInUnit > limitInUnit) {
                     access = false;
                     Long ttl = redisUtils.ttl(clientId, TimeUnit.SECONDS);
                     String hint = props.getHint();
                     hint = hint.replace("${ttl}", String.valueOf(ttl));
-                    ResponseUtils.write(response, hint);
+                    ResponseUtils.writeText(response, hint);
                 }
                 break;
             }

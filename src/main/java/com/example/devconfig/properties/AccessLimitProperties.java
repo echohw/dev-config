@@ -21,7 +21,7 @@ public class AccessLimitProperties {
 
         private String path;
         private Integer timeUnit;
-        private Integer limitInUnit;
+        private Long limitInUnit;
         private String hint = "您的请求过于频繁, 请${ttl}s后再试";
     }
 
